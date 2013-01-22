@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Morphology"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Chunker"/>
+	<classpathentry exported="true" kind="lib" path="lib/cpdetector.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/junit-4.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="/opt/local/lib/swipl-6.0.2/lib/jpl.jar"/>
+	<classpathentry kind="lib" path="/opt/local/lib/swipl-6.0.2/lib"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

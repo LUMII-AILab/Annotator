@@ -1,0 +1,97 @@
+<project name="Annotator" default="zip" basedir=".">
+
+    <description>
+        Build file for Annotator project
+    </description>
+    
+  <!-- set global properties for this build -->
+  <property name="java.src" location="src/main/java"/>
+  <property name="pl.src" location="src/main/prolog"/>
+  <property name="bin.src" location="src/main/bin"/>
+  <property name="resources" location="src/main/resources"/>
+  <property name="build" location="build"/>
+  <property name="dist" location="dist"/>
+  <property name="chunker.dir" location="../Chunker"/>
+  <property name="morphology.dir" location="../Morphology"/>
+
+  <path id="project.class.path">
+    <fileset dir="lib">
+      <include name="**/*.jar"/>
+    </fileset>
+  	<pathelement path="${chunker.dir}/dist/min/chunker.jar"/>
+    <pathelement path="${morphology.dir}/dist/morphology.jar"/>
+  </path>
+	
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="compile" depends="init"
+        description="compile the source " >
+    <subant buildpath="${morphology.dir}" target="dist" verbose="true"/>
+    <subant buildpath="${chunker.dir}" target="dist-embedded" verbose="true"/>
+    <!-- Compile the java code from ${java.src} into ${build} -->
+    <javac source="1.5" encoding="UTF-8" srcdir="${java.src}" destdir="${build}" debug="true">
+      <classpath refid="project.class.path" />
+  	</javac>
+  </target>
+
+  <target name="dist" depends="compile"
+        description="generate the full distribution with dependencies" >
+    <!-- Create the full distribution directory -->
+    <mkdir dir="${dist}"/>
+    <mkdir dir="${dist}/lib"/>
+    <jar jarfile="${dist}/lib/annotator.jar" basedir="${build}"/>
+    <copy todir="${dist}/lib">
+      <fileset dir="lib">
+      	<exclude name="junit*"/>
+      </fileset>
+    </copy>
+    <copy file="${morphology.dir}/dist/morphology.jar" todir="${dist}/lib"/>
+    <copy file="${chunker.dir}/dist/min/chunker.jar" todir="${dist}/lib"/>
+    <copy todir="${dist}/chunker">
+      <fileset dir="${chunker.dir}/dist/embedded"/>
+    </copy>
+  	<delete file="${dist}/chunker/TagSet.xml"/>
+  	<copy todir="${dist}">
+  	  		<fileset dir="${morphology.dir}/dist" includes="Lexicon*.xml"/>
+  	</copy>
+    <copy file="${morphology.dir}/dist/Statistics.xml" todir="${dist}"/>
+    <copy file="${morphology.dir}/dist/TagSet.xml" todir="${dist}"/>
+  	<copy file="${morphology.dir}/dist/Exceptions.txt" todir="${dist}"/>
+    <copy todir="${dist}/chunker/src" overwrite="true">
+      <fileset dir="${pl.src}"/>
+    </copy>
+    <copy todir="${dist}">
+      <fileset dir="${bin.src}"/>
+    </copy>
+    <copy todir="${dist}">
+      <fileset dir="${resources}"/>
+    </copy>
+  </target>
+	
+	<target name="zip" depends="clean-dist" description="compress distribution files">
+	  	<zip destfile="annotator.zip" basedir="." includes="dist/**" />
+	</target>
+
+  <target name="clean"
+      description="clean up" >
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+
+  <target name="clean-deps" depends=""
+          description="clean all dependency projects" >
+    <subant buildpath="${morphology.dir}" target="clean" verbose="true"/>
+    <subant buildpath="${chunker.dir}" target="clean" verbose="true"/>
+  </target>
+	
+  <target name="clean-dist" depends="clean,clean-deps,dist"
+          description="clean and generate the distribution" >
+  </target>
+	
+</project>
