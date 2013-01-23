@@ -6,7 +6,10 @@
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Chunker"/>
 	<classpathentry exported="true" kind="lib" path="lib/cpdetector.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/junit-4.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="/opt/local/lib/swipl-6.0.2/lib/jpl.jar"/>
-	<classpathentry kind="lib" path="/opt/local/lib/swipl-6.0.2/lib"/>
+	<classpathentry kind="lib" path="/opt/local/lib/swipl-6.2.2/lib/jpl.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/opt/local/lib/swipl-6.2.2"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

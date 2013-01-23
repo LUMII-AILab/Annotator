@@ -71,33 +71,39 @@ public class TextData {
 	//TODO - moš korektāk ar listeneriem
 	JFrame parent = null;
 
-	private enum Status {IN_SENTENCE, SENTENCE_END, IN_SPACE}
-	private int progress;
-	private Status status;
-	
-	
 	private TextData (Analyzer morphoAnalyzer, ChunkerInterface chunkerInterface, JFrame parent) {
 		this.morphoAnalyzer = morphoAnalyzer;
 		this.chunkerInterface = chunkerInterface;
 		this.parent = parent;
-		
-		progress = 0;
-		status = Status.IN_SPACE;
 	}
 	
+	/*
+	 * Reads a text document, and splits into sentences (chunks)
+	 */
 	public TextData (String text, Analyzer morphoAnalyzer, ChunkerInterface chunkerInterface, JFrame parent) {
 		this.text = text;
 		this.morphoAnalyzer = morphoAnalyzer;
 		this.chunkerInterface = chunkerInterface;
 		this.parent = parent;
 		
-		progress = 0;
-		status = Status.IN_SPACE;
+		LinkedList<Word> tokens = Splitting.tokenize(morphoAnalyzer, text); //TODO - performance hit, nevajadzīgi analizē visus vārdus vēlreiz
 		
-		while (progress < this.text.length())	cutOffNextChunk();
+		String chunk_text = "";
+		for (Word word : tokens) {
+			if (!chunk_text.isEmpty() && Splitting.isChunkOpener(word)) { // vai šis tokens izskatās pēc jauna teikuma sākuma				
+				chunks.add(new Chunk(this, chunk_text));
+				chunk_text = "";
+			}
+			if (!chunk_text.isEmpty()) chunk_text += " ";
+			chunk_text += word.getToken();
+			if (Splitting.isChunkCloser(word)) { // vai šis tokens izskatās pēc teikuma beigām				
+				chunks.add(new Chunk(this, chunk_text));
+				chunk_text = "";
+			}
+		}
 		
-		if (chunks.size() == 0) 
-			chunks.add(new Chunk(this, ""));
+		if (!chunk_text.isEmpty()) 
+			chunks.add(new Chunk(this, chunk_text));
 				
 		setCurrentChunk(0);
 	}
@@ -132,41 +138,6 @@ public class TextData {
 	public Chunk getCurrentChunk() {
 		if (currentChunk < 0 || currentChunk >= chunks.size()) return null;
 		return chunks.get(currentChunk);
-	}
-
-	// atdalīt nākamo čanku
-	private void cutOffNextChunk() {
-		for (int i = progress; i < text.length(); i++) {
-			switch (status) {
-			case IN_SPACE:
-				if (!Splitting.isSpace(text.charAt(i))) {
-					status = 
-						Splitting.isChunkSeperator(text.charAt(i)) ?
-								Status.SENTENCE_END : Status.IN_SENTENCE;
-					progress = i;
-					return;
-				}				
-				break;
-			case IN_SENTENCE:
-				if (Splitting.isChunkSeperator(text.charAt(i))) 
-					status = Status.SENTENCE_END;
-				break;
-			case SENTENCE_END:
-				if (!Splitting.isChunkSeperator(text.charAt(i))) { 
-					chunks.add(new Chunk(this, text.substring(progress, i)));
-					progress = i;					
-					status = 
-						Splitting.isSpace(text.charAt(i)) ?
-								Status.IN_SPACE : Status.IN_SENTENCE;
-				}
-				break;				
-			}
-		}
-		if (status == Status.IN_SENTENCE || status == Status.SENTENCE_END) { 
-			chunks.add(new Chunk(this, text.substring(progress, text.length())));
-			status = Status.IN_SPACE;
-		}
-		progress = text.length();
 	}
 
 	public void setCurrentChunk(int i) {

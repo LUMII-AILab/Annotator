@@ -68,6 +68,7 @@
     <copy todir="${dist}">
       <fileset dir="${bin.src}"/>
     </copy>
+  	<chmod file="${dist}/run.sh" perm="+x"/>
     <copy todir="${dist}">
       <fileset dir="${resources}"/>
     </copy>
