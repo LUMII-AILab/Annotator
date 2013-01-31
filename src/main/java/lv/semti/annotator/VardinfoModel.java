@@ -81,7 +81,7 @@ public class VardinfoModel extends AbstractTableModel {
 	public int getRowCount() {
 		if (vārds == null)
 			return 0;
-		return vārds.wordformsCount() + 2;
+		return vārds.wordformsCount() + 4;
 	}
 
 	public Object getValueAt(int row, int col) {
@@ -102,14 +102,19 @@ public class VardinfoModel extends AbstractTableModel {
 				return null;
 			}
 		}
-		if (row == vārds.wordformsCount() + 1) {
+		if (row > vārds.wordformsCount() ) {
 			switch (col) {
 			case 0:
 				return new MButton(rāmis, row);
 			case 1:
 				return vārds.getToken();
 			case 2:
-				return "Bezmorfoloģijas elements";
+				switch (row-vārds.wordformsCount()) {
+				case 1: return "Bezmorfoloģijas elements";
+				case 2: return "Vārds svešvalodā";
+				case 3: return "Saīsinājums";
+				}
+				
 			default:
 				return null;
 			}
@@ -142,25 +147,6 @@ public class VardinfoModel extends AbstractTableModel {
 		}
 	}
 
-/*	private String getNozīmes(Wordform vf) {
-		String ret = vf.getValue("Nozīme");
-		int i = 1;
-		String tmp = "1";
-		while (tmp != null && tmp.length() > 0) {
-			tmp = "";
-			tmp = vf.getValue("Nozīme " + i);
-			if (tmp != null && tmp.length() > 0) {
-				if (ret != null && ret.length() > 0) {
-					ret = ret + "; " + tmp;
-				} else {
-					ret = tmp;
-				}
-			}
-			i++;
-		}
-		return ret;
-	}*/
-
 	public Color getColor(int row) {
 		if (vārds == null)
 			return Color.white;
@@ -192,15 +178,21 @@ public class VardinfoModel extends AbstractTableModel {
 			Wordform vārdforma = new Wordform(vārds.getToken());
 			vārdforma.addAttribute(AttributeNames.i_Source, String.format(
 					"Lietotājs zināja labāk %tF", new Date()));
-			//vārdforma.addAttribute(AttributeNames.i_Tag, "x");
 			vārdforma.addAttribute(AttributeNames.i_Lemma, vārds.getToken());
 			vārdforma.addAttribute(AttributeNames.i_PartOfSpeech, AttributeNames.v_Residual);
 			vārds.wordforms.add(vārdforma);
 			vārds.setCorrectWordform(vārdforma);
-		} else if (row == vārds.wordformsCount() + 1) {
+		} else if (row > vārds.wordformsCount()) {
 			Wordform vārdforma = new Wordform(vārds.getToken());
-			//vārdforma.addAttribute(AttributeNames.i_Tag, "x");
-			vārdforma.addAttribute(AttributeNames.i_PartOfSpeech, AttributeNames.v_Residual);
+			switch (row-vārds.wordformsCount()) {
+			case 1: vārdforma.addAttribute(AttributeNames.i_PartOfSpeech, AttributeNames.v_Residual); break;
+			case 2: 
+				vārdforma.addAttribute(AttributeNames.i_PartOfSpeech, AttributeNames.v_Residual);
+				vārdforma.addAttribute(AttributeNames.i_ResidualType, AttributeNames.v_Foreign);
+				break;
+			case 3: vārdforma.addAttribute(AttributeNames.i_PartOfSpeech, AttributeNames.v_Abbreviation); break;
+			}
+			vārdforma.addAttribute(AttributeNames.i_Lemma, vārds.getToken());
 			vārds.wordforms.add(vārdforma);
 			vārds.setCorrectWordform(vārdforma);
 		}
