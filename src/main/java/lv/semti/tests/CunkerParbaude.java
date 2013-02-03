@@ -28,7 +28,7 @@ public class CunkerParbaude {
 	public void sadalīšanaČunkos() {
 		TextData teksts = new TextData(
 				"\tBeidzot viņa iegriezās Āboliņa ceļā. Ceļa galā bija spējš pagrieziens, kuru mēdza saukt par \"Kapteiņa loku\". Cilvēkus te redzēja staigājam vienīgi sestdienās un svētdienās.",
-				null, null, null);
+				null, null, null, null);
 		assertEquals(3, teksts.getChunksCount());
 		assertEquals("Beidzot viņa iegriezās Āboliņa ceļā.", teksts.getChunk(0).getSentence());
 		assertEquals("Ceļa galā bija spējš pagrieziens, kuru mēdza saukt par \"Kapteiņa loku\".", teksts.getChunk(1).getSentence());
@@ -40,7 +40,7 @@ public class CunkerParbaude {
 		//Teksts teksts = 
 			new TextData(
 				"\tKapakmenī bija iegravēti vardi: \"Mazā Marija pie mums atnāca, mīļi apsveica, projām aizsteidza.\"		      Dārza tālais nostūris lejā aiz avenājiem bija īsts biezoknis, kas vai nu ziedēja, vai rotājās ar ogām.",
-				null, null, null);
+				null, null, null, null);
 		/*
 		assertEquals(3, teksts.getČunkuSkaits());
 		assertEquals("Kapakmenī bija iegravēti vardi:", teksts.getČunku(0).getTeikums());

@@ -22,11 +22,18 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.ling.CoreAnnotations.AnswerAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.LVMorphologyAnalysis;
+import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
+import edu.stanford.nlp.sequences.LVMorphologyReaderAndWriter;
 
 import antlr.TokenStream;
 
@@ -164,7 +171,7 @@ public class Chunk {
 			variants.add(currentVariant);
 			
 			if (text.getWordModel() != null && currentVariant.tokens.size() > 0)
-				text.getWordModel().setVārds(currentVariant.tokens.getFirst());
+				text.getWordModel().setVārds(currentVariant.tokens.get(0) );
 			currentVariant.setFirstToken();
 			
 			isTokenized = true;
@@ -239,11 +246,26 @@ public class Chunk {
 		if (isTokenized) throw new Error("Ir jau sadalīts vārdos");
 		variants.clear();
 		
-		currentVariant = new ChunkVariant(this, Splitting.tokenize(morphoAnalyzer,chunk));
+		List<Word> words;
+		if (this.text.tageris != null) {
+			List<CoreLabel> labeled_words = LVMorphologyReaderAndWriter.analyzeSentence(chunk);
+			labeled_words = this.text.tageris.classify(labeled_words);
+			words = new LinkedList<Word>();
+			for (CoreLabel label : labeled_words) {
+				String token = label.getString(TextAnnotation.class);
+				if (token.contains("<s>")) continue;
+				Word analysis = label.get(LVMorphologyAnalysis.class);
+				Wordform maxwf = analysis.getMatchingWordform(label.getString(AnswerAnnotation.class), false);
+				maxwf.addAttribute(AttributeNames.i_Tagged, AttributeNames.v_Yes);
+				words.add(analysis);
+			}
+		} else words = Splitting.tokenize(morphoAnalyzer, chunk); 
+			
+		currentVariant = new ChunkVariant(this, words);
 		variants.add(currentVariant);
 		
 		if (text.getWordModel() != null && currentVariant.tokens.size() > 0)
-			text.getWordModel().setVārds(currentVariant.tokens.getFirst());
+			text.getWordModel().setVārds(currentVariant.tokens.get(0));
 		isTokenized = true;
 		
 		currentVariant.setFirstToken();

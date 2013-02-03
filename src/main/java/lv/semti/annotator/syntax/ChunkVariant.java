@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.w3c.dom.Node;
@@ -82,7 +83,7 @@ public class ChunkVariant {
 	/**
 	 * List of all tokens of the chunk.
 	 */
-	LinkedList<Word> tokens = new LinkedList<Word>();
+	List<Word> tokens;
 	/**
 	 * Mapping from dependants to dependency objects.
 	 */
@@ -96,12 +97,18 @@ public class ChunkVariant {
 	private Word currentToken = null;
 	
 	ChunkerVariant chunkerVariant = null; //vai vajag?
-		
+	
+	/***
+	 * Loads from Annotator's own XML data format
+	 * @param chunk
+	 * @param node
+	 */
 	public ChunkVariant(Chunk chunk, Node node) {		
 		if (!node.getNodeName().equalsIgnoreCase("ČunkaVariants")) 
 			throw new Error("Node " +node.getNodeName() + " nav ČunkaVariants"); 
 		
 		this.chunk = chunk;
+		this.tokens = new LinkedList<Word>();
 		
 		NodeList nodes = node.getChildNodes();
 
@@ -133,7 +140,7 @@ public class ChunkVariant {
 			currentToken = tokens.get(Integer.parseInt(n.getTextContent()));
 	}
 	
-	public ChunkVariant(Chunk chunk, LinkedList<Word> tokens) {
+	public ChunkVariant(Chunk chunk, List<Word> tokens) {
 		this.chunk = chunk;
 		this.tokens = tokens;
 	}
@@ -155,9 +162,10 @@ public class ChunkVariant {
 		paskaidrojumi = new HashMap<Vards, Paskaidrojums>();
 	}*/
 	
-	public ChunkVariant(Chunk chunk, ChunkerVariant chunkerVariant, LinkedList<Word> cleanTokens) {
+	public ChunkVariant(Chunk chunk, ChunkerVariant chunkerVariant, List<Word> cleanTokens) {
 		this.chunk = chunk;
 		this.chunkerVariant = chunkerVariant;
+		tokens = new LinkedList<Word>();
 
 		// Creation of nodes for tokens.
 		for (Word w : cleanTokens) {
@@ -196,7 +204,7 @@ public class ChunkVariant {
 				if (vārdforma.isMatchingWeak(MarkupConverter.fromKamolsMarkup(wordDescription.getTag()))
 						|| wordDescription.isXWord())
 				{						
-					vārdforma.addAttribute("Rādīt zaļu", "jā");
+					vārdforma.addAttribute(AttributeNames.i_Recommended, AttributeNames.v_Yes);
 					vārdforma.addAttributes(MarkupConverter.fromKamolsMarkup(wordDescription.getTag()));
 					if (!(wordDescription.getDependencyHead() == null))
 					{
@@ -251,7 +259,7 @@ public class ChunkVariant {
 		stream.write("</ČunkaVariants>\n");
 	}
 
-	public LinkedList<Word> getTokens() {
+	public List<Word> getTokens() {
 		return tokens;
 	}
 	

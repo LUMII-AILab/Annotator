@@ -55,9 +55,13 @@
     </copy>
     <copy file="${morphology.dir}/dist/morphology.jar" todir="${dist}/lib"/>
     <copy file="${chunker.dir}/dist/min/chunker.jar" todir="${dist}/lib"/>
+  	<copy file="${tagger.dir}/dist/CRF.jar" todir="${dist}/lib"/>
     <copy todir="${dist}/chunker">
       <fileset dir="${chunker.dir}/dist/embedded"/>
     </copy>
+  	<copy todir="${dist}/models">
+  	      <fileset dir="${tagger.dir}/models"/>
+  	</copy>
   	<delete file="${dist}/chunker/TagSet.xml"/>
   	<copy todir="${dist}">
   	  		<fileset dir="${morphology.dir}/dist" includes="Lexicon*.xml"/>

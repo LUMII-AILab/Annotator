@@ -43,6 +43,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import edu.stanford.nlp.ie.AbstractSequenceClassifier;
+import edu.stanford.nlp.ling.CoreLabel;
+
 import lv.semti.PrologInterface.ChunkerInterface;
 import lv.semti.PrologInterface.SpecificAttributeNames;
 import lv.semti.annotator.VardinfoModel;
@@ -64,26 +67,28 @@ public class TextData {
 	private int currentChunk = -1;
 	Analyzer morphoAnalyzer;
 	ChunkerInterface chunkerInterface;
-	
+	AbstractSequenceClassifier<CoreLabel> tageris;
 	private LinkedList<AbstractTableModel> models = new LinkedList<AbstractTableModel>();
 	private VardinfoModel wordModel = null;
 	
 	//TODO - moš korektāk ar listeneriem
 	JFrame parent = null;
 
-	private TextData (Analyzer morphoAnalyzer, ChunkerInterface chunkerInterface, JFrame parent) {
+	private TextData (Analyzer morphoAnalyzer, ChunkerInterface chunkerInterface, AbstractSequenceClassifier<CoreLabel> tageris, JFrame parent) {
 		this.morphoAnalyzer = morphoAnalyzer;
 		this.chunkerInterface = chunkerInterface;
+		this.tageris = tageris;
 		this.parent = parent;
 	}
 	
 	/*
 	 * Reads a text document, and splits into sentences (chunks)
 	 */
-	public TextData (String text, Analyzer morphoAnalyzer, ChunkerInterface chunkerInterface, JFrame parent) {
+	public TextData (String text, Analyzer morphoAnalyzer, ChunkerInterface chunkerInterface, AbstractSequenceClassifier<CoreLabel> tageris, JFrame parent) {
 		this.text = text;
 		this.morphoAnalyzer = morphoAnalyzer;
 		this.chunkerInterface = chunkerInterface;
+		this.tageris = tageris;
 		this.parent = parent;
 		
 		for (String paragraph : text.split("\n")) {
@@ -110,10 +115,18 @@ public class TextData {
 		setCurrentChunk(0);
 	}
 
-	public TextData (Node node, Analyzer morphoAnalyzer, ChunkerInterface chunkerInterface, JFrame parent) {
+	/***
+	 * Reads an XML file in this tools own data format
+	 * @param node
+	 * @param morphoAnalyzer
+	 * @param chunkerInterface
+	 * @param parent
+	 */
+	public TextData (Node node, Analyzer morphoAnalyzer, ChunkerInterface chunkerInterface, AbstractSequenceClassifier<CoreLabel> tageris, JFrame parent) {
 		if (!node.getNodeName().equalsIgnoreCase("MarķētājaDarbaFails")) throw new Error("Node " + node.getNodeName() + " nav MarķētājaDarbaFails"); 
 		this.morphoAnalyzer = morphoAnalyzer;
 		this.chunkerInterface = chunkerInterface;
+		this.tageris = tageris;
 		this.parent = parent;
 		
 		NodeList nodes = node.getChildNodes();		
@@ -269,7 +282,7 @@ public class TextData {
 	}
 
 	public void insertText(String result, int row) {
-		TextData jaunais = new TextData(result, morphoAnalyzer, chunkerInterface, parent);
+		TextData jaunais = new TextData(result, morphoAnalyzer, chunkerInterface, tageris, parent);
 		chunks.addAll(row, jaunais.getChunkList());
 		for (Chunk čunks : jaunais.getChunkList()) {
 			čunks.setText(this);
@@ -862,9 +875,17 @@ public class TextData {
 		out.flush();
 	}
 	
-	
-	public static TextData loadPML(String filename, Analyzer morphoAnalyzer, ChunkerInterface chunkerInterface, JFrame parent) throws Exception {
-		TextData result = new TextData(morphoAnalyzer, chunkerInterface, parent);
+	/***
+	 * Loads a chunk from Prague Markup Language format
+	 * @param filename
+	 * @param morphoAnalyzer
+	 * @param chunkerInterface
+	 * @param parent
+	 * @return
+	 * @throws Exception
+	 */
+	public static TextData loadPML(String filename, Analyzer morphoAnalyzer, ChunkerInterface chunkerInterface, AbstractSequenceClassifier<CoreLabel> tageris, JFrame parent) throws Exception {
+		TextData result = new TextData(morphoAnalyzer, chunkerInterface, tageris, parent);
 		result.text = "";
 		
 		DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();

@@ -32,7 +32,7 @@ public class VardinfoModel extends AbstractTableModel {
 	String[] columnNames = { "", "Vārds", "Marķējums", "Apraksts",
 			"Galotnes nr.", "Ticamība" };
 
-	Statistics statistics;
+	private Statistics statistics;
 
 	// FIXME - hvz vai labākā vieta kur to statistiku linkot....
 
@@ -155,18 +155,24 @@ public class VardinfoModel extends AbstractTableModel {
 		if (row < 0 || row >= this.getRowCount())
 			return null;
 
-		if (vārds.wordforms.get(row).isMatchingStrong("Rādīt zaļu", "jā"))
-			// FIXME vajag normāli noskaidrot, kurš ir pareizais
+		if (vārds.wordforms.get(row).isMatchingStrong(AttributeNames.i_Tagged, AttributeNames.v_Yes))
 			return Color.green;
+
+		if (vārds.wordforms.get(row).isMatchingStrong(AttributeNames.i_Recommended, AttributeNames.v_Yes))
+			return Color.yellow; //TODO - prasīt Laurai vai šitā vajag 
 
 		return Color.white;
 	}
 	
-	public int zaļāRinda() {
+	/**
+	 * Which row is considered to be 'correct' and automatically focused when a new word is added
+	 * @return
+	 */
+	public int autofocusRow() {
 		if (vārds == null) return 0;
 		if (!vārds.isRecognized()) return 0;
 		for (int row = 0; row < vārds.wordforms.size(); row++) 		
-			if (vārds.wordforms.get(row).isMatchingStrong("Rādīt zaļu", "jā"))
+			if (vārds.wordforms.get(row).isMatchingStrong(AttributeNames.i_Tagged, AttributeNames.v_Yes))
 				return row;
 		return 0;		
 	}

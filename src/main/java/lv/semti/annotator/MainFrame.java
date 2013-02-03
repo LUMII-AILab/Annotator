@@ -98,6 +98,10 @@ import lv.semti.morphology.lexicon.Lexicon;
 
 import cpdetector.io.CodepageDetectorProxy;
 import cpdetector.io.JChardetFacade;
+import edu.stanford.nlp.ie.AbstractSequenceClassifier;
+import edu.stanford.nlp.ie.ner.CMMClassifier;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.sequences.LVMorphologyReaderAndWriter;
 
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame {
@@ -164,6 +168,7 @@ public class MainFrame extends JFrame {
 	private String versijasNumurs = "0.9." + revīzija.substring(6, 9);
 	TextData teksts = null;
 	Analyzer locītājs = null;
+	AbstractSequenceClassifier<CoreLabel> tageris = null;
 	ChunkerInterface čunkerinterfeiss= null;
 	
 	private static final String INSTRUCTION_FILENAME = "doc/Instrukcija.pdf";
@@ -204,7 +209,7 @@ public class MainFrame extends JFrame {
 
 
 	private void jbInit() {
-		  	inicializētLocītaju(Lexicon.DEFAULT_LEXICON_FILE);
+		  	initializeAnalyzer(Lexicon.DEFAULT_LEXICON_FILE);
 		    inicializētChunkotāju("chunker/src");
 		    
 		    contentPane = (JPanel) this.getContentPane();
@@ -699,7 +704,7 @@ public class MainFrame extends JFrame {
 		else if (n == 3) saveMarked("pml");
 		else if (n == 5) return;
 		
-		teksts = new TextData("", locītājs, čunkerinterfeiss, this);			
+		teksts = new TextData("", locītājs, čunkerinterfeiss, tageris, this);			
 		marķējumaModelis.setTeksts(teksts);
 		čunkuModelis.setTeksts(teksts);
 		teksts.setWordModel(vārdinfoModelis);
@@ -715,25 +720,39 @@ public class MainFrame extends JFrame {
 		return pielicējs.getRezultāts(); 
 	}
 
-	void inicializētLocītaju(String fails){
+	/**
+	 * initializes morphological analyzer/lexicon, and also attempts to initialize the statistical morphological tagger.
+	 * @param filename
+	 */
+	private void initializeAnalyzer(String filename){
 		try {
-			locītājs = new Analyzer(fails);
+			locītājs = new Analyzer(filename);
 		} catch (Exception e) {
 			e.printStackTrace();
 			jFileChooser.setDialogTitle("Norādiet Lexicon.xml ceļu!");
 			jFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			if (JFileChooser.APPROVE_OPTION == jFileChooser.showOpenDialog(this)) {
-				inicializētLocītaju(jFileChooser.getSelectedFile().getPath());
+				initializeAnalyzer(jFileChooser.getSelectedFile().getPath());
 			} else {
 				//bez lociitaaja nav arshana!
 				throw new Error("Bez locītāja nav aršana!");
 			}
 		}
 		Uzstadijumi.getUzstadijumi().uzliktLocītājam(locītājs);
-		Uzstadijumi.getUzstadijumi().setLeksikonaCeļš(fails);
+		Uzstadijumi.getUzstadijumi().setLeksikonaCeļš(filename);
+		
+		try {
+			LVMorphologyReaderAndWriter.preloadedAnalyzer(locītājs);
+			String serializedClassifier = "models/lv-morpho-model.ser.gz"; //FIXME - make it configurable
+			tageris = CMMClassifier.getClassifier(serializedClassifier);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("Working without the tagger.");
+			tageris = null;
+		}
 	}
 
-	void inicializētChunkotāju(String fails){
+	private void inicializētChunkotāju(String fails){
 		try {
 			čunkerinterfeiss = new ChunkerInterface(fails);
 			čunkerinterfeiss.setMaxChunkLength(Uzstadijumi.getUzstadijumi().getMaxChunkLength());
@@ -811,7 +830,7 @@ public class MainFrame extends JFrame {
 			DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			doc = docBuilder.parse(new File(filename));
 			Node node = doc.getDocumentElement(); 
-			teksts = new TextData(node, locītājs, čunkerinterfeiss, this);
+			teksts = new TextData(node, locītājs, čunkerinterfeiss, tageris, this);
 			marķējumaModelis.setTeksts(teksts);
 			čunkuModelis.setTeksts(teksts);
 			teksts.setWordModel(vārdinfoModelis);
@@ -828,7 +847,7 @@ public class MainFrame extends JFrame {
 	
 	private void openPMLFile(String filename) {
 		try {
-			teksts = TextData.loadPML(filename, locītājs, čunkerinterfeiss, this);
+			teksts = TextData.loadPML(filename, locītājs, čunkerinterfeiss, tageris, this);
 	        if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(null, "Vai sačunkot visus teikumus?\nTas var būt ilgi!", "Čunkot", JOptionPane.YES_NO_OPTION)) {
 	        	runChunkingForAll();
 	        } 
@@ -954,7 +973,7 @@ public class MainFrame extends JFrame {
 	private void inicializētTekstu(String txt) {
 		Cursor hourglassCursor = new Cursor(Cursor.WAIT_CURSOR);
 		setCursor(hourglassCursor);					
-		teksts = new TextData(txt, locītājs, čunkerinterfeiss, this);
+		teksts = new TextData(txt, locītājs, čunkerinterfeiss, tageris, this);
 				
 		marķējumaModelis.setTeksts(teksts);
 		čunkuModelis.setTeksts(teksts);
@@ -1033,7 +1052,7 @@ public class MainFrame extends JFrame {
 		
 		tblVInfo.grabFocus();
 		if (vārdinfoModelis.getRowCount()>1)
-			tblVInfo.changeSelection(tblVInfo.convertRowIndexToView(vārdinfoModelis.zaļāRinda()), 1, false, true);
+			tblVInfo.changeSelection(tblVInfo.convertRowIndexToView(vārdinfoModelis.autofocusRow()), 1, false, true);
 	}
 
 	protected void čunksSelektēts() {
