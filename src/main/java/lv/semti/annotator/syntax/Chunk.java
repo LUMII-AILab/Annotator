@@ -39,6 +39,7 @@ import antlr.TokenStream;
 
 import lv.semti.PrologInterface.ChunkerInterface;
 import lv.semti.PrologInterface.ChunkerVariant;
+import lv.semti.PrologInterface.SpecificAttributeNames;
 
 import lv.semti.morphology.analyzer.*;
 import lv.semti.morphology.attributes.AttributeNames;
@@ -186,15 +187,13 @@ public class Chunk {
 	 * @param chunkerInterface Prologa interfeiss
 	 */
 	public void doChunking(Analyzer morphoAnalyzer, ChunkerInterface chunkerInterface) {
-		if (isChunkingDone) throw new Error("Ir jau nočunkots");
-		
 		if (!isTokenized || currentVariant == null)
 			tokenize(morphoAnalyzer);
 		
 		if (chunkerInterface == null) {
 			setCurrentVariant(0);
 			isChunkingDone = true;
-			return; //FIXME - nav nočekots, vai ts visu izdara ko vajag			
+			return; //FIXME - nav nočekots, vai tas visu izdara ko vajag			
 		}
 		
 		chunkerInterface.izdzēstAtabulu();
@@ -202,22 +201,23 @@ public class Chunk {
 		
 		LinkedList<String> jauPieliktie = new LinkedList<String>();
 		for (Word vārds : currentVariant.tokens) {
-			//FIXME - ja lietotājs ir kautko nomarķējis, tad jādod tas nevis visi varianti
-			
-			try {
-				if (čunkošanai.length()>0) čunkošanai = čunkošanai + " ";
-				čunkošanai = čunkošanai + vārds.getToken();
-				
-				if (!jauPieliktie.contains(vārds.getToken())) 
-					chunkerInterface.pieliktVārdu(MarkupConverter.WordToChunkerFormat(vārds, true));
-				jauPieliktie.add(vārds.getToken());				
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		isChunkingDone = true;
+			if (!vārds.hasAttribute(SpecificAttributeNames.i_XWord, AttributeNames.v_Yes))
+				try {				
+					if (čunkošanai.length()>0) čunkošanai = čunkošanai + " ";
+					čunkošanai = čunkošanai + vārds.getToken();
+					
+					if (!jauPieliktie.contains(vārds.getToken())) 
+						chunkerInterface.pieliktVārdu(MarkupConverter.wordToChunkerFormat(vārds, true));
+					jauPieliktie.add(vārds.getToken());				
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+		}		
 		
-		if (čunkošanai.isEmpty()) return;
+		if (čunkošanai.isEmpty()) {
+			isChunkingDone = true;
+			return;
+		}
 		
 		Cursor hourglassCursor = new Cursor(Cursor.WAIT_CURSOR);
 		Cursor normalCursor = new Cursor(Cursor.DEFAULT_CURSOR);
@@ -227,6 +227,7 @@ public class Chunk {
 			text.parent.getGlassPane().setVisible(true);
 		}		
 
+		variants.clear();
 		ArrayList<ChunkerVariant> č_varianti = chunkerInterface.parse(čunkošanai);
 		//TODO - moš ar tukšo sākotnējo variantu kautkas jāizdara
 		for (ChunkerVariant čv : č_varianti) {
@@ -239,7 +240,9 @@ public class Chunk {
 			text.parent.getGlassPane().setVisible(false);			
 		}
 		
-		setCurrentVariant(1);
+		setCurrentVariant(0);
+		text.dataHasChanged(); //TODO - vai vajag, vai nedublējas?
+		isChunkingDone = true;
 	}
 
 	void tokenize(Analyzer morphoAnalyzer) {

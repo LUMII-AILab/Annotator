@@ -146,21 +146,19 @@ public class ChunkVariant {
 	}
 
 	/**
-	 *  Nodzēš visu sintaksi - x-vārdus un paskaidrojumus
+	 *  Nodzēš lieko sintaksi - vecos x-vārdus 
 	 */
-/*	private void izmestXvārdus() {
-		LinkedList<Vards> izmetamie = new LinkedList<Vards>();
+	private void izmestXvārdus(List<Word> tokens) {
+		LinkedList<Word> izmetamie = new LinkedList<Word>();
 		
-		for (Vards vārds : vārdi) 
+		for (Word vārds : tokens) 
 			//if (vārds.irĪpašība("X-vārds", "Jā"))
-			if (vārds.irĪpašība(SpecificAtributeNames.i_XWord, AttributeNames.v_Yes))
+			if (vārds.hasAttribute(SpecificAttributeNames.i_XWord, AttributeNames.v_Yes))
 				izmetamie.add(vārds);
 		
-		for (Vards izmetamais : izmetamie)
-			vārdi.remove(izmetamais);
-		
-		paskaidrojumi = new HashMap<Vards, Paskaidrojums>();
-	}*/
+		for (Word izmetamais : izmetamie)
+			tokens.remove(izmetamais);
+	}
 	
 	public ChunkVariant(Chunk chunk, ChunkerVariant chunkerVariant, List<Word> cleanTokens) {
 		this.chunk = chunk;
@@ -171,7 +169,7 @@ public class ChunkVariant {
 		for (Word w : cleanTokens) {
 			tokens.add((Word) w.clone());
 		}
-		//izmestXvārdus();  varbūt vajadzēs, ja konstruktoram kautkad pados vārdlisti ar x-vārdiem
+		izmestXvārdus(tokens);  
 		
 		int wordId = 0;
 		// Creation of nodes for x-words.
@@ -194,7 +192,18 @@ public class ChunkVariant {
 		for (WordDescription wordDescription : chunkerVariant.getVārdi()) // Go through all Prolog terms describing the nodes. 
 		{
 			if (wordDescId >= tokens.size()) {
-				System.out.printf("Problēmas ar worddescription tokeniem. Size = %d; mekleejamais id = %d; description:\n%s", tokens.size(), wordDescId, wordDescription.getDescription());
+				System.err.printf("Problēmas ar worddescription tokeniem. Size = %d; mekleejamais id = %d.\n", tokens.size(), wordDescId);
+				for (WordDescription wordDescription2 : chunkerVariant.getVārdi()) {
+					System.err.printf("\tdescription: %s\tXword : %b\n", wordDescription2.getDescription(), wordDescription2.isXWord());
+				}
+				System.err.printf("Tokens:\n");
+				for (Word token : tokens) {
+					System.err.printf("\ttoken: %s\tXword :%b\n", token.getToken(), token.hasAttribute(SpecificAttributeNames.i_XWord, AttributeNames.v_Yes));
+				}
+				System.err.printf("Cleantokens:\n");
+				for (Word token : cleanTokens) {
+					System.err.printf("\ttoken: %s\tXword :%b\n", token.getToken(), token.hasAttribute(SpecificAttributeNames.i_XWord, AttributeNames.v_Yes));
+				}
 				break;
 			}
 				
@@ -221,7 +230,7 @@ public class ChunkVariant {
 				}
 				if (wordDescription.isPartOfXWord())
 					vārdforma.addAttribute(SpecificAttributeNames.i_XPart, AttributeNames.v_Yes);
-				//CHECK-ME
+				//TODO - CHECK-ME
 				if (wordDescription.isXWord() && wordDescription.getAdittionalTag() != null)
 				{
 					String xTag = wordDescription.getAdittionalTag();

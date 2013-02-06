@@ -161,14 +161,7 @@ public class TextData {
 		
 		currentChunk = i;
 		Chunk newChunk = chunks.get(currentChunk);
-	
-		/* nesapratu kāpēc šo vajag - itkā vienkārši pārčunko, bet vai vajag?
-		if (jaunaisČunks.irNočunkots() && !jaunaisČunks.irProcesā()) {
-			jaunaisČunks.setTeikums(jaunaisČunks.getTeikums());
-			System.out.println("čunks nav procesā, neko nedaram");
-		}
-		*/
-			
+				
 		if (!newChunk.isChunkingDone()) {
 			newChunk.doChunking(morphoAnalyzer, chunkerInterface);
 		} 
@@ -194,7 +187,11 @@ public class TextData {
 	// false - ja nevar dabūt nākamo vārdu, jo ir beigas
 		boolean result = true;
 		
-		if (!chunks.get(currentChunk).currentVariant.nextToken()) {
+		if (!chunks.get(currentChunk).currentVariant.nextToken()) { // teikums ir pabeidzies
+			// rečunkojam, jo esam nomarķējuši morfoloģiju un tagad sintakse būs pareizāka eksportam uz PML kokiem
+			chunks.get(currentChunk).doChunking(morphoAnalyzer, chunkerInterface);
+			this.dataHasChanged();
+			
 			int čunkanr = currentChunk + 1;
 			if (čunkanr >= chunks.size()) čunkanr = 0;
 			
@@ -208,7 +205,7 @@ public class TextData {
 				}
 			}
 						
-			if (result) setCurrentChunk(čunkanr);
+			setCurrentChunk(čunkanr);
 		}
 		return result;
 	}
