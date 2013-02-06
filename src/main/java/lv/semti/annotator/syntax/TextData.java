@@ -579,6 +579,7 @@ public class TextData {
 	 * Supporting functions for "saveAsPML".
 	 *=======================================================================*/
 	
+	
 	private int writeANodesDFS(
 			BufferedWriter out, Word current,  PMLRelTypes parentType, String sentId, int xId,
 			HashMap<Word, String> word2mid, ChunkVariant chunk)
@@ -601,30 +602,41 @@ public class TextData {
 			out.write("\t<role>" + role + "</role>"); out.newLine();
 			out.write("\t<children>"); out.newLine();
 			String xType = roles.transform(wf.getToken(), PMLRelTypes.X);
-			boolean isCoord = xType.equals("crdParts");
-			if (isCoord)
-			{
+			
+			PMLRelTypes relType = PMLRelTypes.X;
+			if (xType.equals("crdParts")) relType = PMLRelTypes.COORD;
+			if (xType.equals("spcPmc")) relType = PMLRelTypes.PMC;
+			switch (relType) {
+			case COORD:
 				out.write("\t\t<coordinfo>"); out.newLine();
 				out.write("\t\t\t<coordtype>" + xType + "</coordtype>"); out.newLine();
-			} else
-			{
+				break;
+			case PMC:
+				out.write("\t\t<pmcinfo>"); out.newLine();
+				out.write("\t\t\t<pmctype>" + xType + "</pmctype>"); out.newLine();
+				break;
+			default:
 				out.write("\t\t<xinfo>"); out.newLine();
 				out.write("\t\t\t<xtype>" + xType + "</xtype>"); out.newLine();
-			}out.write("\t\t\t<tag>" + wf.getTag());
-			if (wf.getValue(SpecificAttributeNames.i_XTag) != null)
-			{
-				String addTag = wf.getValue(SpecificAttributeNames.i_XTag);
-				if (xType.equals("xPrep"))
-				{
-					// Cutting off x-prepositions attribute 7.3.
-					if (addTag.contains("y"))
-						addTag = addTag.substring(0, addTag.indexOf('y') + 1);
-					else addTag = addTag.substring(0, addTag.indexOf('n') + 1);
-				}
-				out.write("[" + addTag + "]");
 			}
-			out.write("</tag>");
-			out.newLine();
+			
+			if (relType != PMLRelTypes.PMC) {
+				out.write("\t\t\t<tag>" + wf.getTag());
+				if (wf.getValue(SpecificAttributeNames.i_XTag) != null)
+				{
+					String addTag = wf.getValue(SpecificAttributeNames.i_XTag);
+					if (xType.equals("xPrep"))
+					{
+						// Cutting off x-prepositions attribute 7.3.
+						if (addTag.contains("y"))
+							addTag = addTag.substring(0, addTag.indexOf('y') + 1);
+						else addTag = addTag.substring(0, addTag.indexOf('n') + 1);
+					}
+					out.write("[" + addTag + "]");
+				}
+				out.write("</tag>");
+				out.newLine();
+			}
 			out.write("\t\t\t<children>"); out.newLine();
 			int tmpXId = xId + 1;
 			ArrayList<Word> postponed = new ArrayList<Word>();
@@ -638,18 +650,21 @@ public class TextData {
 						&& childWf.getValue(SpecificAttributeNames.i_XPart).equals(AttributeNames.v_Yes))
 				{
 					tmpXId = writeANodesDFS(
-							out, child, (isCoord ? PMLRelTypes.COORD : PMLRelTypes.X),
+							out, child, relType,
 							sentId, tmpXId, word2mid, chunk);
 				} else postponed.add(child);
 			}
 			
 			out.write("\t\t\t</children>"); out.newLine();
 			
-			if (isCoord)
-			{
+			switch (relType) {
+			case COORD:
 				out.write("\t\t</coordinfo>"); out.newLine();
-			} else 
-			{
+				break;
+			case PMC:
+				out.write("\t\t</pmcinfo>"); out.newLine();
+				break;
+			default:
 				out.write("\t\t</xinfo>"); out.newLine();
 			}
 			

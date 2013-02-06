@@ -66,7 +66,9 @@ public class RoleTransformator {
 		xRoleMapping = new HashMap<String, String>();
 		
 		xRoleMapping.put("izteicējs", "xPred");
-		xRoleMapping.put("spk", "xSimile");
+		xRoleMapping.put("simile", "xSimile");
+		xRoleMapping.put("spk", "spcPmc");
+		xRoleMapping.put("named entity", "namedEnt");
 		
 	}
 	

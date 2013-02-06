@@ -15,7 +15,12 @@
  *******************************************************************************/
 package lv.semti.annotator.syntax;
 
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 
 import java.io.Writer;
 import java.util.HashMap;
@@ -164,6 +169,17 @@ public class ChunkVariant {
 		this.chunk = chunk;
 		this.chunkerVariant = chunkerVariant;
 		tokens = new LinkedList<Word>();
+		
+		// FIXME- temp
+		try {
+			Writer straume = new BufferedWriter(new OutputStreamWriter(
+					new FileOutputStream("test.html"), "UTF-8"));
+			straume.write(chunkerVariant.getHTML());
+			straume.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		// Creation of nodes for tokens.
 		for (Word w : cleanTokens) {
