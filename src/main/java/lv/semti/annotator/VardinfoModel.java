@@ -32,10 +32,6 @@ public class VardinfoModel extends AbstractTableModel {
 	String[] columnNames = { "", "Vārds", "Marķējums", "Apraksts",
 			"Galotnes nr.", "Ticamība" };
 
-	private Statistics statistics;
-
-	// FIXME - hvz vai labākā vieta kur to statistiku linkot....
-
 	public void setVārds(Word vārds) {
 		if (this.vārds != null)
 			this.vārds.setTableModel(null);
@@ -49,11 +45,6 @@ public class VardinfoModel extends AbstractTableModel {
 
 	public VardinfoModel(MainFrame rāmis) {
 		this.rāmis = rāmis;
-		try {
-			statistics = new Statistics(Statistics.DEFAULT_STATISTICS_FILE);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 	@Override
@@ -140,7 +131,7 @@ public class VardinfoModel extends AbstractTableModel {
 			String endingID = vārdforma.getValue(AttributeNames.i_EndingID);			
 			return (endingID == null) ? 0 :Integer.parseInt(endingID);
 		case 5:
-			return new Double(statistics.getEstimate(vārdforma));
+			return new Double(Statistics.getStatistics().getEstimate(vārdforma));
 
 		default:
 			return null;
