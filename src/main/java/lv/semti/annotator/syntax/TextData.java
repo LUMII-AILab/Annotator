@@ -490,7 +490,8 @@ public class TextData {
 					// Write W block.
 					wOut.write("\t\t\t<w id=\"w-" + fileId + "-p" + wParID + "w" + wWordID + "\">");
 					wOut.newLine();
-					wOut.write("\t\t\t\t<token>" + token.getToken() + "</token>"); wOut.newLine();
+					String outToken = token.getToken().replace("&", "&amp;").replace("<","&lt;").replace("\"", "&quot;");
+					wOut.write("\t\t\t\t<token>" + outToken + "</token>"); wOut.newLine();
 					openPara = false;
 					if (!reminding.startsWith(" ") && !jaunaRinda.matcher(reminding).find())
 					{
@@ -508,8 +509,9 @@ public class TextData {
 					mOut.write("\t\t\t<w.rf>w#w-" + fileId + "-p" + wParID + "w" 
 							+ wWordID + "</w.rf>");
 					mOut.newLine();
-					mOut.write("\t\t\t<form>" + token.getToken() + "</form>"); mOut.newLine();
-					mOut.write("\t\t\t<lemma>" + wf.getValue(AttributeNames.i_Lemma) + "</lemma>");
+					mOut.write("\t\t\t<form>" + outToken + "</form>"); mOut.newLine();
+					String outLemma = wf.getValue(AttributeNames.i_Lemma).replace("&", "&amp;").replace("<","&lt;").replace("\"", "&quot;");
+					mOut.write("\t\t\t<lemma>" + outLemma + "</lemma>");
 					mOut.newLine();
 					mOut.write("\t\t\t<tag>" + wf.getTag() + "</tag>");
 					mOut.newLine();
