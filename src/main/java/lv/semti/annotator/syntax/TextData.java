@@ -607,7 +607,7 @@ public class TextData {
 			
 			PMLRelTypes relType = PMLRelTypes.X;
 			if (xType.equals("crdParts")) relType = PMLRelTypes.COORD;
-			if (xType.equals("spcPmc")) relType = PMLRelTypes.PMC;
+			if (xType.equals("spcPmc") || xType.equals("quot")) relType = PMLRelTypes.PMC;
 			switch (relType) {
 			case COORD:
 				out.write("\t\t<coordinfo>"); out.newLine();

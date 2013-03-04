@@ -56,6 +56,7 @@ public class RoleTransformator {
 		roleMapping.put("prievārdeklis", "xPrep");
 		roleMapping.put("skaitlis", "xNum");
 		roleMapping.put("apvienojums", "crdParts");
+		roleMapping.put("quot", "quot");
 		
 		// From def-x-plt.pl
 		roleMapping.put("plt", "subrCl");
