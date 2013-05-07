@@ -569,7 +569,6 @@ public class MainFrame extends JFrame {
 				public void actionPerformed(ActionEvent arg0) {
 					if ( marķējumuTabulasPopupRinda >= 0 &&
 							marķējumuTabulasPopupRinda < marķējumuTabula.getRowCount() )
-						System.out.println("kautkastaknotiek?");
 						marķējumaModelis.atkārtotVārdaMarķēšanu(marķējumuTabulasPopupRinda);
 				}		    	
 		    });

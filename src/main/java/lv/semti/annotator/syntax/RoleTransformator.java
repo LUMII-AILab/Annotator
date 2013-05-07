@@ -69,7 +69,8 @@ public class RoleTransformator {
 		xRoleMapping.put("izteicējs", "xPred");
 		xRoleMapping.put("simile", "xSimile");
 		xRoleMapping.put("spk", "spcPmc");
-		xRoleMapping.put("named entity", "namedEnt");
+		xRoleMapping.put("named_entity", "namedEnt");
+		xRoleMapping.put("pielikums", "xApp");
 		
 	}
 	
@@ -84,8 +85,11 @@ public class RoleTransformator {
 		localRole = localRole.trim();
 		if (roleMapping.containsKey(localRole))
 			return roleMapping.get(localRole);
-		if (!localRole.equals(""))
-			System.out.println("RoleTransformator could not transform \"" + localRole + "\"");
+		if (!localRole.equals("")) {
+			System.err.println("RoleTransformator could not transform \"" + localRole + "\"");
+			new Throwable().printStackTrace();
+			System.err.println("RoleTransformator could not transform \"" + localRole + "\"");
+		}
 		return "N/A";
 	}
 	
@@ -100,7 +104,7 @@ public class RoleTransformator {
 	{
 		switch (context)
 		{
-			case X:	if (xRoleMapping.containsKey(localRole)) return xRoleMapping.get(localRole);
+			case X:	if (xRoleMapping.containsKey(localRole)) return xRoleMapping.get(localRole); //break; missing on purpose
 			default: return transform(localRole);
 		}
 	}
