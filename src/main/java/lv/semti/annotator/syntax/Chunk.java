@@ -53,7 +53,7 @@ import lv.semti.morphology.attributes.AttributeValues;
  */
 public class Chunk {
 	TextData text;
-	private String chunk;
+	public String chunk;
 	//FIXME nevajag šo string! varētu uztaisīt no vārdiem!	
 
 	private boolean isChunkingDone = false;
@@ -188,7 +188,7 @@ public class Chunk {
 	 */
 	public void doChunking(Analyzer morphoAnalyzer, ChunkerInterface chunkerInterface) {
 		if (!isTokenized || currentVariant == null)
-			tokenize(morphoAnalyzer);
+			tokenize(morphoAnalyzer, false);
 		
 		if (chunkerInterface == null) {
 			setCurrentVariant(0);
@@ -245,7 +245,7 @@ public class Chunk {
 		isChunkingDone = true;
 	}
 
-	void tokenize(Analyzer morphoAnalyzer) {
+	void tokenize(Analyzer morphoAnalyzer, boolean markCorrect) {
 		if (isTokenized) throw new Error("Ir jau sadalīts vārdos");
 		variants.clear();
 		
@@ -258,8 +258,9 @@ public class Chunk {
 				String token = label.getString(TextAnnotation.class);
 				if (token.contains("<s>")) continue;
 				Word analysis = label.get(LVMorphologyAnalysis.class);
-				Wordform maxwf = analysis.getMatchingWordform(label.getString(AnswerAnnotation.class), false);
+				Wordform maxwf = analysis.getMatchingWordform(label.getString(AnswerAnnotation.class), markCorrect);
 				maxwf.addAttribute(AttributeNames.i_Tagged, AttributeNames.v_Yes);
+				if (markCorrect) analysis.setCorrectWordform(maxwf);
 				words.add(analysis);
 			}
 		} else words = Splitting.tokenize(morphoAnalyzer, chunk); 
@@ -338,7 +339,7 @@ public class Chunk {
 	public boolean isFinished() {
 		return this.isChunkingDone() && !this.inProgress();
 	}
-
+	
 	public void setText(TextData text) {
 		this.text = text;
 	}

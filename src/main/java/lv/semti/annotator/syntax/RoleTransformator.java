@@ -86,7 +86,7 @@ public class RoleTransformator {
 		if (roleMapping.containsKey(localRole))
 			return roleMapping.get(localRole);
 		if (!localRole.equals("")) {
-			System.err.println("RoleTransformator could not transform \"" + localRole + "\"");
+			//System.err.println("RoleTransformator could not transform \"" + localRole + "\"");
 			new Throwable().printStackTrace();
 			System.err.println("RoleTransformator could not transform \"" + localRole + "\"");
 		}

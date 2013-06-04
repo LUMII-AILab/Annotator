@@ -247,6 +247,9 @@ public class MainFrame extends JFrame {
 		    JMenuItem jMenuFileSavePML = new JMenuItem("Saglabāt marķēto tekstu PML");
 		    jMenuFileSavePML.setActionCommand("pml");
 		    jMenuFileSavePML.addActionListener(saveListener);
+		    JMenuItem jMenuFileSavePML2 = new JMenuItem("Notagot visu tekstu uz PML");
+		    jMenuFileSavePML2.setActionCommand("pml2");
+		    jMenuFileSavePML2.addActionListener(saveListener);
 		    
 		    JMenuItem jMenuFileAtvērt = new JMenuItem("Atvērt marķējamo tekstu");
 		    jMenuFileAtvērt.addActionListener(new ActionListener(){
@@ -269,6 +272,7 @@ public class MainFrame extends JFrame {
 		    jMenuFile.add(jMenuFileSaveTxt);
 		    jMenuFile.add(jMenuFileSaveXML);
 		    jMenuFile.add(jMenuFileSavePML);
+		    jMenuFile.add(jMenuFileSavePML2);
 		    jMenuFile.addSeparator();
 		    jMenuFile.add(jMenuFileBeigtDarbu);
 		    
@@ -803,6 +807,10 @@ public class MainFrame extends JFrame {
 	        		teksts.saveAsXML(izejasFails, versijasNumurs);
 	        	if (type.equals("pml") || type.equals("all"))
 	        		teksts.saveAsPML(izejasFails, "Eksperimentāls anotācijas paraugs.", null, versijasNumurs);
+	        	if (type.equals("pml2")) {
+	        		TextData notagotais = teksts.taggedTextData();
+	        		notagotais.saveAsPML(izejasFails, "Eksperimentāls anotācijas paraugs.", null, versijasNumurs);
+	        	}	        		
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -142,6 +142,26 @@ public class TextData {
 			this.setCurrentChunk(Integer.parseInt(n.getTextContent()));
 	}
 	
+	/**
+	 * Builds a new copy that is freshly tagged and can be altered w/o touching the original one. 
+	 * Not an exact clone - does not link to the UI 
+	 * @param source - the source text data object to be cloned
+	 */
+	public TextData taggedTextData () {
+		TextData jaunais = new TextData(morphoAnalyzer,chunkerInterface,tageris,null);
+		
+		jaunais.text = this.text;
+		jaunais.chunks = new ArrayList<Chunk>();
+		for (Chunk c : this.chunks) {
+			Chunk tagotais = new Chunk(jaunais,c.chunk);
+			tagotais.tokenize(morphoAnalyzer, true);
+			tagotais.doChunking(morphoAnalyzer, chunkerInterface);
+			tagotais.currentVariant.setCurrentToken(null);
+			jaunais.chunks.add(tagotais);
+		}
+		return jaunais;
+	}
+	
 	public void addModel(AbstractTableModel model) {
 		models.add(model);
 	}
