@@ -188,7 +188,7 @@ public class Chunk {
 	 */
 	public void doChunking(Analyzer morphoAnalyzer, ChunkerInterface chunkerInterface) {
 		if (!isTokenized || currentVariant == null)
-			tokenize(morphoAnalyzer, false);
+			tokenize(morphoAnalyzer);
 		
 		if (chunkerInterface == null) {
 			setCurrentVariant(0);
@@ -245,7 +245,7 @@ public class Chunk {
 		isChunkingDone = true;
 	}
 
-	void tokenize(Analyzer morphoAnalyzer, boolean markCorrect) {
+	void tokenize(Analyzer morphoAnalyzer) {
 		if (isTokenized) throw new Error("Ir jau sadalīts vārdos");
 		variants.clear();
 		
@@ -258,9 +258,8 @@ public class Chunk {
 				String token = label.getString(TextAnnotation.class);
 				if (token.contains("<s>")) continue;
 				Word analysis = label.get(LVMorphologyAnalysis.class);
-				Wordform maxwf = analysis.getMatchingWordform(label.getString(AnswerAnnotation.class), markCorrect);
+				Wordform maxwf = analysis.getMatchingWordform(label.getString(AnswerAnnotation.class), true);
 				maxwf.addAttribute(AttributeNames.i_Tagged, AttributeNames.v_Yes);
-				if (markCorrect) analysis.setCorrectWordform(maxwf);
 				words.add(analysis);
 			}
 		} else words = Splitting.tokenize(morphoAnalyzer, chunk); 
@@ -273,6 +272,19 @@ public class Chunk {
 		isTokenized = true;
 		
 		currentVariant.setFirstToken();
+	}
+	
+	/***
+	 * Marks all the wordforms suggested by the tagger as the correct options 
+	 */
+	public void applyTaggedWordforms() {
+		for (Word w : currentVariant.tokens) {
+			for (Wordform wf : w.wordforms) {
+				if (wf.isMatchingStrong(AttributeNames.i_Tagged, AttributeNames.v_Yes)) {
+					w.setCorrectWordform(wf);
+				}
+			}
+		}
 	}
 
 	public String getSentence() {

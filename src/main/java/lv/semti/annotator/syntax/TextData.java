@@ -154,8 +154,9 @@ public class TextData {
 		jaunais.chunks = new ArrayList<Chunk>();
 		for (Chunk c : this.chunks) {
 			Chunk tagotais = new Chunk(jaunais,c.chunk);
-			tagotais.tokenize(morphoAnalyzer, true);
+			tagotais.tokenize(morphoAnalyzer);
 			tagotais.doChunking(morphoAnalyzer, chunkerInterface);
+			tagotais.applyTaggedWordforms();
 			tagotais.currentVariant.setCurrentToken(null);
 			jaunais.chunks.add(tagotais);
 		}
