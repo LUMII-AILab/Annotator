@@ -92,24 +92,10 @@ public class TextData {
 		this.parent = parent;
 		
 		for (String paragraph : text.split("\n")) {
-			LinkedList<Word> tokens = Splitting.tokenize(morphoAnalyzer, paragraph); //TODO - performance hit, nevajadzīgi analizē visus vārdus vēlreiz
-			
-			String chunk_text = "";
-			for (Word word : tokens) {
-				if (!chunk_text.isEmpty() && Splitting.isChunkOpener(word)) { // vai šis tokens izskatās pēc jauna teikuma sākuma				
-					chunks.add(new Chunk(this, chunk_text));
-					chunk_text = "";
-				}
-				if (!chunk_text.isEmpty()) chunk_text += " ";
-				chunk_text += word.getToken();
-				if (Splitting.isChunkCloser(word)) { // vai šis tokens izskatās pēc teikuma beigām				
-					chunks.add(new Chunk(this, chunk_text));
-					chunk_text = "";
-				}
+			LinkedList<LinkedList<Word>> sentences = Splitting.tokenizeSentences(morphoAnalyzer, paragraph); 
+			for (LinkedList<Word> sentence : sentences) {
+				chunks.add(new Chunk(this, sentence));
 			}
-			
-			if (!chunk_text.isEmpty()) 
-				chunks.add(new Chunk(this, chunk_text));			
 		}
 				
 		setCurrentChunk(0);

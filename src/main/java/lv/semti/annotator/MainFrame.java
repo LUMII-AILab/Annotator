@@ -946,7 +946,7 @@ public class MainFrame extends JFrame {
 		    }
 		    
 			inicializētTekstu(failaSaturs.toString().replace("﻿", "")); 
-			// pirmais "" nav tukšs string, bet EF BF ... baiti, ko pieliek notepads u.c. unicode teksta saakumaa
+			// pirmais "" nav (kā izskatās) tukšs string, bet BOM marker - EF BF ... baiti, ko pieliek notepads u.c. unicode teksta saakumaa
 		    
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

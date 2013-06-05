@@ -180,6 +180,46 @@ public class Chunk {
 		} else throw new Error("Node " + node.getNodeName() + " nav anotatora XML Čunks, nedz PML formāta <s>");
 	}
 
+	/***
+	 * Creates a Chunk object out of a sentence that is already tokenized and morphoanalyzed.
+	 * Performs tagging if available.
+	 * @param text
+	 * @param sentence
+	 */
+	public Chunk(TextData text, List<Word> sentence) {
+		this.text = text;
+		String chunk_text = "";
+		for (Word word : sentence) {
+			if (!chunk_text.isEmpty()) chunk_text += " ";
+			chunk_text += word.getToken();
+		}
+		this.chunk = chunk_text;
+		
+		List<Word> words;
+		if (this.text.tageris != null) {
+			List<CoreLabel> labeled_words = LVMorphologyReaderAndWriter.analyzeSentence2(sentence);
+			labeled_words = this.text.tageris.classify(labeled_words);
+			words = new LinkedList<Word>();
+			for (CoreLabel label : labeled_words) {
+				String token = label.getString(TextAnnotation.class);
+				if (token.contains("<s>")) continue;
+				Word analysis = label.get(LVMorphologyAnalysis.class);
+				Wordform maxwf = analysis.getMatchingWordform(label.getString(AnswerAnnotation.class), true);
+				maxwf.addAttribute(AttributeNames.i_Tagged, AttributeNames.v_Yes);
+				words.add(analysis);
+			}
+		} else words = sentence; 
+			
+		currentVariant = new ChunkVariant(this, words);
+		variants.add(currentVariant);
+		
+		if (text.getWordModel() != null && currentVariant.tokens.size() > 0)
+			text.getWordModel().setVārds(currentVariant.tokens.get(0));
+		isTokenized = true;
+		
+		currentVariant.setFirstToken();				
+	}
+
 	/**
 	 * Veic sintakses analīzi ar prologa čunkeri
 	 * 
