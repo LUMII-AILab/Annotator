@@ -84,7 +84,8 @@ public class TextData {
 	/*
 	 * Reads a text document, and splits into sentences (chunks)
 	 */
-	public TextData (String text, Analyzer morphoAnalyzer, ChunkerInterface chunkerInterface, AbstractSequenceClassifier<CoreLabel> tageris, JFrame parent) {
+	public TextData(String text, Analyzer morphoAnalyzer, ChunkerInterface chunkerInterface, 
+					AbstractSequenceClassifier<CoreLabel> tageris, JFrame parent, boolean forceChunking) {
 		this.text = text;
 		this.morphoAnalyzer = morphoAnalyzer;
 		this.chunkerInterface = chunkerInterface;
@@ -97,8 +98,15 @@ public class TextData {
 				chunks.add(new Chunk(this, sentence));
 			}
 		}
-				
-		setCurrentChunk(0);
+		
+		/* izmantot tikai specifiskos gadījumos, jo situācijā, 
+		 * kad šī metode tiek izsaukta funkcionalitātēs 
+		 * 'Paņemt tekstu no clipboard' vai 'Sadalīt divās daļās' nolūkos,
+		 * jaunizveidotās rindiņas nepareizi iekrāsojas dzeltenas
+		 */
+		if (forceChunking) {
+			setCurrentChunk(0);
+		}
 	}
 
 	/***
@@ -286,7 +294,7 @@ public class TextData {
 	}
 
 	public void insertText(String result, int row) {
-		TextData jaunais = new TextData(result, morphoAnalyzer, chunkerInterface, tageris, parent);
+		TextData jaunais = new TextData(result, morphoAnalyzer, chunkerInterface, tageris, parent, false);
 		chunks.addAll(row, jaunais.getChunkList());
 		for (Chunk čunks : jaunais.getChunkList()) {
 			čunks.setText(this);

@@ -26,7 +26,7 @@ public class Valerijtests {
 		Valerijformats lietvārdi = new Valerijformats("D:\\Lingvistika\\Valeerijs\\adjectives.txt");
 		Analyzer analizators = new Analyzer("D:\\Lingvistika\\Leksikons.xml");
 		analizators.guessNouns = false;
-		analizators.guessParticibles = false;
+		analizators.guessParticiples = false;
 		analizators.guessVerbs = false;
 		analizators.guessAdjectives = true;
 		analizators.enableDiminutive = false;

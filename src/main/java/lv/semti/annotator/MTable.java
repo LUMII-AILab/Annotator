@@ -22,6 +22,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.JButton;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.ToolTipManager;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
@@ -43,6 +44,8 @@ public class MTable extends JTable {
 
 	@Override
 	public String getToolTipText(MouseEvent e) {
+		/* uzliekam rādīšanas periodu = 60min */
+		ToolTipManager.sharedInstance().setDismissDelay(1000*60);
 		if (columnAtPoint(e.getPoint()) == 0) return null;
 		String tooltip = parent.vārdinfoModelis.getToolTip(this.convertRowIndexToModel(rowAtPoint( e.getPoint())));			
 		

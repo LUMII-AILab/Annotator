@@ -119,7 +119,7 @@ public class Uzstadijumi extends AttributeValues {
 
 	public void uzliktLocītājam(Analyzer locītājs) {
 		locītājs.guessVerbs = Boolean.parseBoolean(parametraVērtība("Minēt darbības vārdus"));
-		locītājs.guessParticibles = Boolean.parseBoolean(parametraVērtība("Minēt divdabjus"));
+		locītājs.guessParticiples = Boolean.parseBoolean(parametraVērtība("Minēt divdabjus"));
 		locītājs.guessNouns = Boolean.parseBoolean(parametraVērtība("Minēt lietvārdus"));
 		locītājs.guessAdjectives = Boolean.parseBoolean(parametraVērtība("Minēt īpašības vārdus"));
 		locītājs.enableGuessing = Boolean.parseBoolean(parametraVērtība("Minēt vārdus pēc galotnes"));
