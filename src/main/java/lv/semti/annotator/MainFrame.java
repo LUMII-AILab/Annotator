@@ -69,6 +69,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
@@ -179,7 +180,7 @@ public class MainFrame extends JFrame {
 	BorderLayout borderLayout1 = new BorderLayout();
 	JTable čunkuTabula;
 	CunkuModelis čunkuModelis = null;
-	JScrollPane jScrollPane = new JScrollPane();	
+	JScrollPane jScrollPane = new JScrollPane();
 	
 	MarkejumaModelis marķējumaModelis = null;
 	JTable marķējumuTabula = null;
@@ -206,8 +207,7 @@ public class MainFrame extends JFrame {
 		    enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		      jbInit();
 	}
-
-
+	
 	private void jbInit() {
 		  	initializeAnalyzer(Lexicon.DEFAULT_LEXICON_FILE);
 		    inicializētChunkotāju("chunker/src");
@@ -219,7 +219,12 @@ public class MainFrame extends JFrame {
 		    //this.setTitle("Marķētājs - " + versijasNumurs);
 		    this.setTitle("Marķētājs 1.1 (alfa versija)");
 		    this.setExtendedState(this.getExtendedState() | Frame.MAXIMIZED_BOTH);
-
+		    
+		    // vajadzīgs, lai  aizverot programmu 
+		    // confirm dialogs 'vai saglabāt izmaiņas'
+		    // strādātu pareizi
+		    this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		    
 		    contentPane.setMinimumSize(new Dimension(415, 600));
 		    contentPane.setLayout(new BorderLayout());
 		    
@@ -488,6 +493,43 @@ public class MainFrame extends JFrame {
 		    });
 		    čunkuTabulasMenu.add(apvienotČunkus);
 		    
+		    JMenuItem splitInTwoParts = new JMenuItem("Sadalīt divās daļās");
+		    splitInTwoParts.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					if ( čunkuTabulasPopupRinda >= 0 &&
+						 čunkuTabulasPopupRinda < čunkuTabula.getRowCount() ) {
+						String rowText = (String) čunkuTabula.getValueAt(čunkuTabula.getSelectedRow(), čunkuTabula.getSelectedColumn());
+						String infoMsg = "Ielieciet kursoru pozīcijā, kurā gribat sadalīt tekstu";
+						JTextArea textArrea = new JTextArea();
+						textArrea.setRows(5);
+						textArrea.setColumns(30);
+						textArrea.setLineWrap(true);
+						textArrea.setWrapStyleWord(true);
+						textArrea.setText(rowText);
+						textArrea.setFont(new Font("Verdana", Font.PLAIN, 12));
+						textArrea.setAutoscrolls(true);
+						textArrea.setSize(textArrea.getPreferredSize().width, 1);
+						
+				        int res = JOptionPane.showConfirmDialog(
+				        		   null, new Object[] { infoMsg, textArrea }, "Rindiņas sadalītājs", JOptionPane.WARNING_MESSAGE);
+				        
+				        // lietotājs nospieda OK
+				        if (res == 0) {
+				        	String teikums1 = rowText.substring(0, textArrea.getCaretPosition()).trim();
+				        	String teikums2 = rowText.substring(textArrea.getCaretPosition()).trim();
+				        	
+				        	
+				        	teksts.deleteChunk(čunkuTabulasPopupRinda);
+				        	teksts.insertText(teikums2, čunkuTabulasPopupRinda);
+				        	teksts.insertText(teikums1, čunkuTabulasPopupRinda);
+//				        	teksts.modifyChunkText(teikums1, čunkuTabulasPopupRinda);
+//				        	teksts.insertNewChunk(teikums2, čunkuTabulasPopupRinda); 
+				        }
+					}
+				}		    	
+		    });
+		    čunkuTabulasMenu.add(splitInTwoParts);
+		    
 		    JMenuItem iespraustČunku = new JMenuItem("Iespraust tukšu rindiņu");
 		    iespraustČunku.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
@@ -632,6 +674,10 @@ public class MainFrame extends JFrame {
 		    		   
 		    panelTeksts.add(čunkuTabula, BorderLayout.CENTER);
 		    panelTeksts.add(jScrollPane);
+		    
+		    // palīdz horizontālā scrollbar rādīšanā
+		    čunkuTabula.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		    
 		    jScrollPane.getViewport().add(čunkuTabula, null);
 
 		    panelMarķTabula.add(marķējumuTabula, BorderLayout.CENTER);
@@ -685,7 +731,13 @@ public class MainFrame extends JFrame {
 		    čunkuTabula.changeSelection(0, 0, false, true);
 	}
 
-	protected void newFile() {
+	/**
+	 * Parāda dialoglogu, kurš lietotājam 
+	 * pārvaicā, vai saglabāt marķējumu un 
+	 * saglabā to atbilstošā formātā.
+	 * @return <i>false</i>, ja lietotājs atceļ procedūru
+	 */
+	protected boolean confirmSave() {
 		Object[] options = {
 				"Jā, visos formātos",
 				"Jā, kā tekstu",
@@ -705,9 +757,17 @@ public class MainFrame extends JFrame {
 		else if (n == 1) saveMarked("txt");
 		else if (n == 2) saveMarked("xml");
 		else if (n == 3) saveMarked("pml");
-		else if (n == 5) return;
+		// n == -1 gadījumā, ja dialoglogu aizver ar krustiņu
+		else if (n == -1 || n == 5) return false;
+		return true;
+	}
+	
+	protected void newFile() {
+		if (!confirmSave()) {
+			return;
+		}
 		
-		teksts = new TextData("", locītājs, čunkerinterfeiss, tageris, this);			
+		teksts = new TextData("", locītājs, čunkerinterfeiss, tageris, this, true);			
 		marķējumaModelis.setTeksts(teksts);
 		čunkuModelis.setTeksts(teksts);
 		teksts.setWordModel(vārdinfoModelis);
@@ -745,7 +805,7 @@ public class MainFrame extends JFrame {
 		Uzstadijumi.getUzstadijumi().setLeksikonaCeļš(filename);
 		
 		try {
-			LVMorphologyReaderAndWriter.preloadedAnalyzer(locītājs);
+			LVMorphologyReaderAndWriter.setPreloadedAnalyzer(locītājs);
 			String serializedClassifier = "models/lv-morpho-model.ser.gz"; //FIXME - make it configurable
 			tageris = CMMClassifier.getClassifier(serializedClassifier);
 		} catch (Exception e) {
@@ -980,7 +1040,7 @@ public class MainFrame extends JFrame {
 	private void inicializētTekstu(String txt) {
 		Cursor hourglassCursor = new Cursor(Cursor.WAIT_CURSOR);
 		setCursor(hourglassCursor);					
-		teksts = new TextData(txt, locītājs, čunkerinterfeiss, tageris, this);
+		teksts = new TextData(txt, locītājs, čunkerinterfeiss, tageris, this, true);
 				
 		marķējumaModelis.setTeksts(teksts);
 		čunkuModelis.setTeksts(teksts);
@@ -997,8 +1057,14 @@ public class MainFrame extends JFrame {
 			if (cellWidth > platums) platums = cellWidth;
 			
 		}
-		čunkuTabula.getColumn("Fragmenti").setMinWidth(platums+2);
+		
 		//rēķina tabulas platumu pēc rindu satura...
+		if (platums+2 > panelTeksts.getPreferredSize().width) {
+			čunkuTabula.getColumn("Fragmenti").setMinWidth(platums+2);
+		} else {
+			čunkuTabula.getColumn("Fragmenti").setMinWidth(panelTeksts.getPreferredSize().width+2);
+		}
+		
 		
 		Cursor normalCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 		setCursor(normalCursor);
@@ -1022,6 +1088,12 @@ public class MainFrame extends JFrame {
 	    		//locītājs.toXML(Uzstadijumi.getUzstadijumi().getLeksikonaCeļš());
 	    		// FIXME - seivošana aizkomentēta pagaidām - jo pēc multileksikonu ieviešanas saglabāšana nestrādā..
 	    		//TODO - varētu advancēti pārbaudīt, vai ir kautkas mainījies
+	    		
+	    		if (!confirmSave()) {
+	    			return;
+	    		} else {
+	    			this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	    		}
 	    		
 	    		Uzstadijumi.getUzstadijumi().pieliktParametru("Aktīvais tabbed pane panelis", String.valueOf(labāPuse.getSelectedIndex()));
 	    		Uzstadijumi.getUzstadijumi().saglabāt(); 
