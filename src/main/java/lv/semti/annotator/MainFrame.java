@@ -19,6 +19,7 @@ import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
@@ -70,6 +71,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
@@ -80,6 +82,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -234,7 +237,7 @@ public class MainFrame extends JFrame {
 					newFile();
 				}	    	
 		    });
-			
+		    
 		    ActionListener saveListener = new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
 					saveMarked(e.getActionCommand());
@@ -489,7 +492,8 @@ public class MainFrame extends JFrame {
 					if ( čunkuTabulasPopupRinda >= 0 &&
 							čunkuTabulasPopupRinda < čunkuTabula.getRowCount() )
 						teksts.mergeWithNextChunk(čunkuTabulasPopupRinda);
-				}		    	
+						calcTableWidth();
+				}
 		    });
 		    čunkuTabulasMenu.add(apvienotČunkus);
 		    
@@ -522,8 +526,8 @@ public class MainFrame extends JFrame {
 				        	teksts.deleteChunk(čunkuTabulasPopupRinda);
 				        	teksts.insertText(teikums2, čunkuTabulasPopupRinda);
 				        	teksts.insertText(teikums1, čunkuTabulasPopupRinda);
-//				        	teksts.modifyChunkText(teikums1, čunkuTabulasPopupRinda);
-//				        	teksts.insertNewChunk(teikums2, čunkuTabulasPopupRinda); 
+				        	
+				        	calcTableWidth();
 				        }
 					}
 				}		    	
@@ -1036,6 +1040,26 @@ public class MainFrame extends JFrame {
 		System.out.printf("Saskaitījās %d kā ANSI;  %d kā UTF8\n", lvSimboliNoWin1257, lvSimboliNoUTF8);
 		return (lvSimboliNoUTF8 > lvSimboliNoWin1257) ? Charset.forName("UTF-8") : Charset.forName("windows-1257");
 	}
+	
+	/** 
+	 * Rēķina tabulas platumu pēc rindu satura.
+	 */
+	private void calcTableWidth() {
+		int width = 0;
+        for (int row = 0; row < čunkuTabula.getRowCount(); row++) {
+            int prefWidth = čunkuTabula.getCellRenderer(row, 0).
+                getTableCellRendererComponent(čunkuTabula, čunkuTabula.getValueAt(row, 0), false, false, row, 0).
+                    getPreferredSize().width;
+            width = Math.max(width, prefWidth + čunkuTabula.getIntercellSpacing().width);
+        }
+        
+        TableColumn tc = čunkuTabula.getColumnModel().getColumn(čunkuTabula.convertColumnIndexToModel(0));
+        if (width > panelTeksts.getPreferredSize().width) {
+        	tc.setPreferredWidth(width);
+        } else {
+        	tc.setPreferredWidth(panelTeksts.getPreferredSize().width+5);
+        }
+	}
 
 	private void inicializētTekstu(String txt) {
 		Cursor hourglassCursor = new Cursor(Cursor.WAIT_CURSOR);
@@ -1047,24 +1071,7 @@ public class MainFrame extends JFrame {
 		teksts.setWordModel(vārdinfoModelis);
 		sintaksesPanelis.setČunks(teksts.getChunk(0));
 
-		//rēķina tabulas platumu pēc rindu satura...
-		int platums = 200;
-		for (int i = 0; i < čunkuTabula.getRowCount(); i++) {
-			Component comp = čunkuTabula.getDefaultRenderer(
-					čunkuModelis.getColumnClass(0)).getTableCellRendererComponent(čunkuTabula, čunkuTabula.getValueAt(i, 0), false,
-							false, 0, 0);
-			int cellWidth = comp.getPreferredSize().width;
-			if (cellWidth > platums) platums = cellWidth;
-			
-		}
-		
-		//rēķina tabulas platumu pēc rindu satura...
-		if (platums+2 > panelTeksts.getPreferredSize().width) {
-			čunkuTabula.getColumn("Fragmenti").setMinWidth(platums+2);
-		} else {
-			čunkuTabula.getColumn("Fragmenti").setMinWidth(panelTeksts.getPreferredSize().width+2);
-		}
-		
+		calcTableWidth();
 		
 		Cursor normalCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 		setCursor(normalCursor);
