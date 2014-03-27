@@ -18,6 +18,9 @@ package lv.semti.annotator;
 import java.awt.Color;
 import java.util.Date;
 import java.util.Map.Entry;
+import java.util.Observable;
+import java.util.Observer;
+
 import javax.swing.table.AbstractTableModel;
 
 import lv.semti.morphology.analyzer.*;
@@ -25,7 +28,7 @@ import lv.semti.morphology.attributes.AttributeNames;
 import lv.semti.morphology.corpus.Statistics;
 
 @SuppressWarnings("serial")
-public class VardinfoModel extends AbstractTableModel {
+public class VardinfoModel extends AbstractTableModel implements Observer{
 
 	Word vārds = null;
 	MainFrame rāmis = null;
@@ -34,10 +37,10 @@ public class VardinfoModel extends AbstractTableModel {
 
 	public void setVārds(Word vārds) {
 		if (this.vārds != null)
-			this.vārds.setTableModel(null);
+			this.vārds.deleteObservers();
 
 		if (vārds != null)
-			vārds.setTableModel(this);
+			vārds.addObserver(this);
 
 		this.vārds = vārds;
 		fireTableDataChanged();
@@ -209,5 +212,10 @@ public class VardinfoModel extends AbstractTableModel {
 					+ "\n";
 
 		return īpašības;
+	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+		this.fireTableDataChanged();
 	}
 }

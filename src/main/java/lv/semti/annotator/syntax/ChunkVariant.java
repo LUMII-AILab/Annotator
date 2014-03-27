@@ -242,7 +242,7 @@ public class ChunkVariant {
 						dep.add(kas);
 						children.put(ko, dep);
 					}
-					tokens.get(wordDescId).dataHasChanged();
+					tokens.get(wordDescId).notifyObservers();
 				}
 				if (wordDescription.isPartOfXWord())
 					vārdforma.addAttribute(SpecificAttributeNames.i_XPart, AttributeNames.v_Yes);

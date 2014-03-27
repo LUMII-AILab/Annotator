@@ -1123,7 +1123,7 @@ public class MainFrame extends JFrame {
 				for (Wordform vārdforma : pāranalizētais.wordforms) {
 					vārds.wordforms.add(vārdforma);
 				}
-				vārds.dataHasChanged();
+				vārds.notifyObservers();
 				return;
 			}
 		}
