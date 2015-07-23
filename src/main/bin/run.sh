@@ -1,6 +1,8 @@
 #!/bin/sh
 # Works on MacOSX; not tested on Linux
-eval `swipl -dump-runtime-variables`
+cd "${0%/0}" # cd to folder of the script
+
+eval `swipl -dump-runtime-variables` #verify swi prolog paths
 JPLSO="$PLBASE/lib/$PLARCH/libjpl.$PLSOEXT"
 JPLJAR="$PLBASE/lib/jpl.jar"
 
